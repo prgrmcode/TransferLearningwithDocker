@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
-# Got requirements to file with:   pip freeze > requirements.txt
+# Got requirements to file with:   pip list --format=freeze > requirements.txt
 
 
 # # Transfer Learning with ResNet18
 
 # In[1]:
 
-#     conda create -n envConda_docker python=3.11
-#     conda activate envConda_docker
+#     installation environment.md
+#     conda activate condaenv-torch
 #     pip install -r requirements.txt
 
 import torch
@@ -21,7 +21,10 @@ from torchvision import datasets, models, transforms
 import matplotlib.pyplot as plt
 import time
 import os
+import sys
 import copy
+from tqdm import tqdm # to visualize the progress of the training
+
 
 
 # ### **Mean and Standard Deviation Arrays:**
@@ -51,6 +54,10 @@ import copy
 
 # In[2]:
 
+model_path = '/home/prgrmcode/app/model/model.pth'
+if os.path.exists(model_path):
+    print(f"Model file {model_path} already exists, skipping training")
+    sys.exit(0)
 
 mean = np.array([0.5, 0.5, 0.5])
 std = np.array([0.25, 0.25, 0.25])
@@ -77,10 +84,14 @@ data_transforms = {
 # In[3]:
 
 
-data_dir = 'data_beexant/archive/hymenoptera_data/'
+data_dir = '/home/prgrmcode/app/data/data_beexant/archive/hymenoptera_data/'
 image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
+# Limit the train dataset to the first 1000 images for faster training:
+# from torch.utils.data import Subset
+# image_datasets['train'] = Subset(image_datasets['train'], range(1000))
+
 dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
                                              shuffle=True, num_workers=0)
               for x in ['train', 'val']}
@@ -89,6 +100,9 @@ class_names = image_datasets['train'].classes
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(class_names)
+
+# Limit this train set for first 1000 images
+
 
 
 # In[4]:
@@ -192,7 +206,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             running_corrects = 0
 
             # Iterate over data.
-            for inputs, labels in dataloaders[phase]:
+            for inputs, labels in tqdm(dataloaders[phase]):
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
@@ -347,4 +361,4 @@ model_conv = train_model(model_conv, criterion, optimizer_conv,
                          exp_lr_scheduler, num_epochs=25)
 
 # Save the trained model
-torch.save(model_conv.state_dict(), 'model.pth')
+torch.save(model_conv.state_dict(), '/home/prgrmcode/app/model/model.pth')

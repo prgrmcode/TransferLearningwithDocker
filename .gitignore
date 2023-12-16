@@ -17,7 +17,8 @@ env/
 .DS_Store
 .dockerignore
 .docker/
-docker-compose.yml
+# docker-compose.yml
+docker-compose-app.yml
 docker-compose.override.yml
 *.log
 
