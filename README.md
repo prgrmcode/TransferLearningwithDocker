@@ -68,6 +68,9 @@ docker-compose up
 
 - **[localhost:5000](http://localhost:5000/)**
 
+
+- [app predictions](application/localhost.png)
+
 ## Create and run a new training container:
 
 ```
